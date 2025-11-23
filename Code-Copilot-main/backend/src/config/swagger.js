@@ -9,7 +9,7 @@ const options = {
       description: 'AI-powered code generation API using OpenAI GPT',
       contact: {
         name: 'Shivam Sharma',
-        url: 'https://github.com/0912Shivam/Code-Copilot',
+        url: 'https://github.com/0912shivam/Code-Copilot',
       },
     },
     servers: [
