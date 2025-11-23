@@ -9,7 +9,7 @@ An enterprise-grade AI code generation platform powered by cutting-edge technolo
 
 ## 📚 API Documentation
 
-**Interactive Swagger Documentation:** [![API Documentation](./docs/screenshots/api-docs.png)](http://localhost:5000/api-docs)
+**Interactive Swagger Documentation:** [![API Documentation](./Code-Copilot-main/docs/screenshots/api-docs.png)](http://localhost:5000/api-docs)
 
 Explore comprehensive API documentation with live testing capabilities at the `/api-docs` endpoint once your development server is running.
 
@@ -75,7 +75,7 @@ The application leverages PostgreSQL with Sequelize ORM for robust data persiste
 
 **Database Schema Diagram:** Complete database schema showing relationships between entities
 
-![Database Schema Diagram](./docs/screenshots/db-schema-diagram.png)
+![Database Schema Diagram](./Code-Copilot-main/docs/screenshots/db-schema-diagram.png)
 ### Core Entities
 
 #### **users** - User authentication and profiles
