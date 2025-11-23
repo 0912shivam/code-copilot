@@ -8,14 +8,14 @@ const options = {
       version: '1.0.0',
       description: 'AI-powered code generation API using OpenAI GPT',
       contact: {
-        name: 'Amit Godara',
-        url: 'https://github.com/mr-godara/Code-Copilot',
+        name: 'Shivam Sharma',
+        url: 'https://github.com/0912Shivam/Code-Copilot',
       },
     },
     servers: [
       {
-        url: 'http://localhost:5000',
-        description: 'Development server',
+        url: 'https://code-copilot-backend-yfgp.onrender.com',
+        description: 'Production server',
       },
     ],
     tags: [
