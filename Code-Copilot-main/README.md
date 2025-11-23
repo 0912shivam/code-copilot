@@ -1,37 +1,39 @@
 # Code Generation Copilot
 
-A modern, full-stack AI-powered code generation application built with React, Node.js, and MySQL. This intelligent system allows users to convert natural language prompts into code across 10+ programming languages, view beautifully syntax-highlighted results, and manage their generation history.
+An enterprise-grade AI code generation platform powered by cutting-edge technology. Built with React, Express.js, and PostgreSQL, this application transforms natural language descriptions into production-ready code snippets across multiple programming languages with elegant syntax highlighting and comprehensive history management.
 
 ## 🚀 Live Demo
 
-⚠️ **Note:** Backend may experience cold starts if deployed on free tier services. Please allow 30-60 seconds for initial load.
+⚠️ **Important:** The backend service may require initialization time on first access (30-60 seconds) due to serverless architecture. Subsequent requests will be significantly faster.
 
 
 ## 📚 API Documentation
 
-**Interactive API Documentation:** [![API Documentation](./docs/screenshots/api-docs.png)](http://localhost:5000/api-docs)
+**Interactive Swagger Documentation:** [![API Documentation](./docs/screenshots/api-docs.png)](http://localhost:5000/api-docs)
 
-Complete API documentation with interactive examples is available at `/api-docs` after starting the server.
+Explore comprehensive API documentation with live testing capabilities at the `/api-docs` endpoint once your development server is running.
 
-🔗 **Make sure your server is running locally at** `http://localhost:5000`
+🔗 **Ensure the backend server is active at** `http://localhost:5000`
 
-## 🛠️ Tech Stack
+## 🛠️ Technology Stack
 
-### Frontend
-- **React 18** with **Vite**
-- **TailwindCSS**
-- **Prism.js** (Syntax Highlighting)
-- **Axios**
-- **React Icons**
+### Frontend Architecture
+- **React 18** - Modern UI framework with Hooks
+- **Vite** - Lightning-fast build tool
+- **TailwindCSS** - Utility-first CSS framework
+- **Prism.js** - Professional code syntax highlighting
+- **Axios** - HTTP client for API communication
+- **React Icons** - Scalable vector icons
 
-### Backend
-- **Node.js** with **Express.js**
-- **Sequelize ORM**
-- **MySQL** / **PostgreSQL**
-- **OpenAI API** (GPT-3.5-turbo)
-- **Express Validator**
-- **Swagger UI** (API Documentation)
-- **CORS**
+### Backend Infrastructure
+- **Node.js** - JavaScript runtime environment
+- **Express.js** - Robust web application framework
+- **Sequelize ORM** - Database abstraction layer
+- **PostgreSQL** - Primary relational database
+- **Google Gemini API** - AI-powered code generation
+- **Express Validator** - Request validation middleware
+- **Swagger UI** - Auto-generated API documentation
+- **CORS** - Cross-origin resource sharing
 
 ## 📁 Project Structure
 
@@ -67,9 +69,9 @@ Code-Copilot/
 └── SETUP.md                  
 ```
 
-## 🗄️ Database Schema
+## 🗄️ Database Architecture
 
-The application uses MySQL with Sequelize ORM. The database consists of the following main entities:
+The application leverages PostgreSQL with Sequelize ORM for robust data persistence. The normalized schema consists of three primary entities:
 
 **Database Schema Diagram:** Complete database schema showing relationships between entities
 
@@ -102,232 +104,222 @@ The application uses MySQL with Sequelize ORM. The database consists of the foll
 - **Languages** are used in multiple **Generations**
 - **Generations** belong to one **Language** and optionally one **User**
 
-### Database Design Decisions
+### Database Design Philosophy
 
-**Normalization (3NF):**
-- Languages stored separately to avoid redundancy
-- Each generation references language via foreign key
-- Reduces storage and ensures data consistency
+**Third Normal Form (3NF) Compliance:**
+- Programming languages maintained in a dedicated reference table
+- Generation records link to languages through foreign key relationships
+- Eliminates data redundancy and maintains referential integrity
 
-**Foreign Keys:**
-- `language_id` → CASCADE delete (removes generations if language deleted)
-- `user_id` → SET NULL delete (preserves generations if user deleted)
+**Referential Integrity Constraints:**
+- `language_id` → CASCADE on delete (automatically removes dependent generations)
+- `user_id` → SET NULL on delete (retains generations as anonymous records)
 
-**Indexes:**
-- `created_at` DESC for fast pagination
-- `language_id` for efficient JOINs
-- Primary keys for O(1) lookups
+**Performance Optimization with Indexes:**
+- `created_at` indexed in descending order for efficient pagination
+- `language_id` indexed for optimized JOIN operations
+- Clustered primary key indexes for constant-time lookups
 
-## ⚡ Complexity Analysis
+## ⚡ Performance Analysis
 
-### Paginated Retrieval Time Complexity
+### Query Complexity for Pagination
 
-**Query:** `SELECT * FROM generations ORDER BY created_at DESC LIMIT 10 OFFSET 20`
+**Sample Query:** `SELECT * FROM generations ORDER BY created_at DESC LIMIT 10 OFFSET 20`
 
-- **Without Index:** O(n log n) where n = total rows (due to sorting)
-- **With Index on `created_at`:** O(log n + k) where k = page size
-  - Index lookup: O(log n)
-  - Fetching k rows: O(k)
-  - OFFSET performance degrades with large offsets: O(offset + k)
+- **Unindexed Table:** O(n log n) complexity where n represents total row count (requires full table sort)
+- **Indexed on `created_at`:** O(log n + k) where k equals page size
+  - B-tree index traversal: O(log n)
+  - Row retrieval: O(k)
+  - Note: OFFSET-based pagination degrades linearly: O(offset + k)
 
-**Optimization Strategy:**
-- Created index on `created_at` column
-- For very large datasets (>1M rows), cursor-based pagination would be better (using `WHERE created_at < last_timestamp`)
+**Performance Strategy:**
+- Implemented descending index on `created_at` timestamp
+- For datasets exceeding 1M rows, cursor-based pagination recommended (utilizing `WHERE created_at < cursor_timestamp` approach)
 
-### Schema Impact on Performance
+### Schema Performance Characteristics
 
-**Positive Impacts:**
-- **Join Performance:** Normalized schema with proper indexes allows efficient JOINs
-- **Storage Efficiency:** Languages table reduces redundant string storage by ~90%
-- **Cache Friendly:** Small languages table fits in memory
-- **Flexibility:** Easy to add language metadata without touching generations table
+**Optimization Benefits:**
+- **JOIN Efficiency:** Normalized structure with strategic indexes enables high-performance joins
+- **Storage Optimization:** Reference table architecture reduces string duplication by approximately 90%
+- **Memory Utilization:** Compact languages table remains cache-resident
+- **Schema Flexibility:** Language attributes can be extended independently of generation data
 
-**Potential Bottlenecks:**
-- Each query requires a JOIN with languages table (mitigated by DB query optimizer)
-- Deep pagination with OFFSET becomes slower (use cursor-based for >10K rows)
+**Performance Considerations:**
+- Each retrieval operation performs a JOIN with the languages reference table (optimized by query planner)
+- Large OFFSET values in pagination queries show linear performance degradation (recommend cursor-based approach beyond 10K records)
 
-### Indexes Created
+### Index Strategy
 
-1. **`generations.created_at` (DESC):** 
-   - Speeds up ORDER BY in history queries
-   - Critical for pagination performance
+1. **`generations.created_at` (Descending):** 
+   - Accelerates ORDER BY operations in chronological queries
+   - Essential for maintaining pagination performance
    
 2. **`generations.language_id`:**
-   - Optimizes JOINs with languages table
-   - Enables fast filtering by language
+   - Enhances JOIN performance with languages reference table
+   - Supports efficient language-based filtering
    
-3. **`languages.name` (UNIQUE):**
-   - Enforces uniqueness constraint
-   - Speeds up language lookup by name
+3. **`languages.name` (UNIQUE constraint):**
+   - Guarantees data uniqueness at database level
+   - Optimizes language name lookups
 
-4. **Primary Keys (Clustered Indexes):**
-   - Auto-indexed on all `id` columns
-   - Enables O(1) lookups
+4. **Clustered Primary Keys:**
+   - Automatically created on all `id` columns
+   - Provides constant-time O(1) record access
 
-**When are indexes useful?**
-- Columns used in WHERE clauses
-- Columns used in ORDER BY
-- Foreign key columns used in JOINs
-- Columns used frequently in queries
+**Optimal Index Usage Patterns:**
+- Columns appearing in WHERE predicates
+- Columns referenced in ORDER BY clauses
+- Foreign key columns involved in JOIN operations
+- High-frequency query columns
 
-**Trade-offs:**
-- Indexes speed up reads but slow down writes
-- Each index uses additional storage
-- Too many indexes can confuse query optimizer
+**Index Trade-off Considerations:**
+- Read operations benefit while write operations incur overhead
+- Each index consumes additional disk space
+- Excessive indexing may hinder query optimizer efficiency
 
-## 🚀 Local Development Setup
+## 🚀 Development Environment Setup
 
-### Prerequisites
+### System Requirements
 
-Make sure you have the following installed on your system:
+Verify these dependencies are installed on your development machine:
 
-- **Node.js** (version 18 or higher)
+- **Node.js** (v18.0.0 or later)
 - **npm** or **yarn** package manager
-- **MySQL** 8.0+ or **PostgreSQL** 14+
+- **PostgreSQL** 14+ (Primary database)
 
-### Step 1: Clone the Repository
+### Step 1: Repository Setup
 
 ```bash
-git clone https://github.com/mr-godara/Code-Copilot.git
-cd Code-Copilot
+git clone https://github.com/0912shivam/code-copilot.git
+cd code-copilot
 ```
 
-### Step 2: Backend Setup
+### Step 2: Backend Configuration
 
-**Navigate to backend directory:**
+**Navigate to the backend directory:**
 
 ```bash
 cd backend
 ```
 
-**Install dependencies:**
+**Install required packages:**
 
 ```bash
 npm install
 ```
 
-**Create environment file:**
+**Initialize environment configuration:**
 
 ```bash
 cp .env.example .env
 ```
 
-**Configure environment variables in `.env`:**
+**Configure your `.env` file with these variables:**
 
 ```env
-# Server Configuration
+# Application Server Settings
 PORT=5000
 NODE_ENV=development
 
-# Database (MySQL)
-DATABASE_URL=mysql://root:password@localhost:3306/code_copilot
+# PostgreSQL Database Connection
+DATABASE_URL=postgresql://postgres:your_password@localhost:5432/code_copilot
 
-# Database (PostgreSQL alternative)
-# DATABASE_URL=postgresql://username:password@localhost:5432/code_copilot
+# Google Gemini AI Configuration
+GEMINI_API_KEY=your_gemini_api_key_here
 
-# GEMINI API
-GEMINI_API_KEY=your_GEMINI_api_key_here
-
-# CORS
+# Cross-Origin Resource Sharing
 CORS_ORIGIN=http://localhost:5173
 ```
 
-**Create database:**
+**Initialize PostgreSQL database:**
 
 ```sql
--- For MySQL
-CREATE DATABASE code_copilot;
-
--- For PostgreSQL
-CREATE DATABASE code_copilot;
+CREATE DATABASE code_copilot
+    WITH ENCODING = 'UTF8'
+    LC_COLLATE = 'en_US.UTF-8'
+    LC_CTYPE = 'en_US.UTF-8';
 ```
 
-**Run database migrations:**
+**Execute database migrations:**
 
 ```bash
-npm run migrate
+node run-db-setup.js
 ```
 
-**Generate Prisma client (if using Prisma):**
-
-```bash
-npx prisma generate
-```
-
-**Start the backend server:**
+**Launch the development server:**
 
 ```bash
 npm run dev
 ```
 
-The backend API will be available at `http://localhost:5000`
+Your backend API server will be accessible at `http://localhost:5000`
 
-### Step 3: Frontend Setup
+### Step 3: Frontend Configuration
 
-**Open a new terminal and navigate to frontend directory:**
+**Launch a new terminal and navigate to the frontend:**
 
 ```bash
-cd frontend
+cd ../frontend
 ```
 
-**Install dependencies:**
+**Install project dependencies:**
 
 ```bash
 npm install
 ```
 
-**Create environment file:**
+**Create environment configuration:**
 
 ```bash
 cp .env.example .env
 ```
 
-**Configure environment variables in `.env`:**
+**Set environment variables in `.env`:**
 
 ```env
 VITE_API_URL=http://localhost:5000
 ```
 
-**Start the development server:**
+**Start the Vite development server:**
 
 ```bash
 npm run dev
 ```
 
-The frontend application will be available at `http://localhost:5173`
+Your frontend application will be live at `http://localhost:5173`
 
-### Step 4: Verify Installation
+### Step 4: Installation Verification
 
-1. Open your browser and go to `http://localhost:5173`
-2. Check backend health: `http://localhost:5000/api/health`
-3. View API documentation: `http://localhost:5000/api-docs`
+1. Navigate to the application: `http://localhost:5173`
+2. Verify backend status: `http://localhost:5000/api/health`
+3. Access interactive API docs: `http://localhost:5000/api-docs`
 
 
-## ✨ Key Features
+## ✨ Core Capabilities
 
-### User Features
+### User-Facing Features
 
-- **Natural Language to Code** - Convert plain English descriptions into working code
-- **Multi-Language Support** - Python, JavaScript, TypeScript, C++, Java, Go, Rust, C#, PHP, Ruby
-- **Interactive Code Display** - Beautiful syntax highlighting with Prism.js
-- **One-Click Copy** - Instantly copy generated code to clipboard
-- **Generation History** - View and manage all past generations with pagination
-- **Responsive Design** - Optimized for desktop, tablet, and mobile devices
-- **Real-time Feedback** - Loading states and error handling for better UX
+- **AI-Powered Code Synthesis** - Transform natural language queries into executable code
+- **10+ Language Support** - Python, JavaScript, TypeScript, C++, Java, Go, Rust, C#, PHP, Ruby
+- **Professional Code Rendering** - Syntax highlighting powered by Prism.js
+- **Instant Clipboard Integration** - Single-click code copying functionality
+- **Comprehensive History Tracking** - Browse and manage previous generations with pagination
+- **Adaptive UI Design** - Seamless experience across desktop, tablet, and mobile platforms
+- **Live Status Updates** - Interactive loading indicators and intelligent error messages
 
-### Technical Features
+### Technical Architecture
 
-- **RESTful API** - Well-documented API endpoints with Swagger UI
-- **JWT Authentication** - Secure user authentication (optional)
-- **Database Normalization** - 3NF compliant schema design
-- **Input Validation** - Comprehensive validation with Express Validator
-- **Error Handling** - Global error handling middleware
-- **Pagination** - Efficient paginated queries with metadata
-- **AI Integration** - OpenAI GPT-3.5-turbo for intelligent code generation
+- **RESTful API Design** - Comprehensive endpoint documentation via Swagger UI
+- **Secure Authentication** - JWT-based user verification (configurable)
+- **Normalized Data Model** - Third Normal Form (3NF) database architecture
+- **Request Validation** - Robust input validation using Express Validator
+- **Centralized Error Management** - Global exception handling middleware
+- **Optimized Pagination** - Efficient data retrieval with complete metadata
+- **Advanced AI Integration** - Google Gemini API for intelligent code generation
 
-### Supported Languages
+### Programming Language Coverage
 
-Python • JavaScript • TypeScript • C++ • Java • Go • Rust • C# • PHP • Ruby
+**Python** • **JavaScript** • **TypeScript** • **C++** • **Java** • **Go** • **Rust** • **C#** • **PHP** • **Ruby**
 
 
 
@@ -335,14 +327,15 @@ Python • JavaScript • TypeScript • C++ • Java • Go • Rust • C# •
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 👨‍💻 Author
+## 👨‍💻 Developer
 
-**Built by Shivam Sharma**
+**Developed by Shivam Sharma**
 
-- GitHub: (https://github.com/0912shivam)
+- GitHub Profile: [@0912shivam](https://github.com/0912shivam)
+- Repository: [code-copilot](https://github.com/0912shivam/code-copilot)
 
 ---
 
-**Last updated:** November 2025
+**Last Updated:** November 2025
 
-**Need Help?** Open an issue on GitHub or contact the repository owner.
+**Support:** For issues or questions, please open a GitHub issue or reach out to the project maintainer.
